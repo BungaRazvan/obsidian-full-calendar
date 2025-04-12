@@ -217,6 +217,26 @@ export function renderCalendar(
                     container?.prepend(checkbox);
                 }
             }
+
+            const start = event.start;
+            const end = event.end;
+
+            if (start && end) {
+                const durationMs = end - start;
+                const minutes = Math.floor(durationMs / (1000 * 60));
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+
+                let durationStr = "";
+                if (hours) durationStr += `${hours}h `;
+                if (mins) durationStr += `${mins}m`;
+
+                // Append duration to the title
+                const newTitle = `(${durationStr})`;
+                const span = createEl("div", { cls: "fc-event-duration" });
+                span.textContent = newTitle;
+                el.querySelector(".fc-event-title")?.appendChild(span);
+            }
         },
 
         longPressDelay: 250,
