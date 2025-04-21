@@ -222,6 +222,7 @@ export function renderCalendar(
             const end = event.end;
 
             if (start && end) {
+                // @ts-ignore
                 const durationMs = end - start;
                 const minutes = Math.floor(durationMs / (1000 * 60));
                 const hours = Math.floor(minutes / 60);

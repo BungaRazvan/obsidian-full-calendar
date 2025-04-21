@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { CalendarInfo, OFCEvent } from "../../types";
+import moment from "moment";
 
 function makeChangeListener<T>(
     setState: React.Dispatch<React.SetStateAction<T>>,
@@ -198,6 +199,44 @@ export const EditEvent = ({
         );
     };
 
+    const setDefinedEndTime = (
+        value: moment.DurationInputArg1,
+        type: moment.DurationInputArg2
+    ) => {
+        const dateTime = moment(`${date}T${startTime}`).add(value, type);
+        setEndTime(dateTime.format("HH:mm"));
+    };
+
+    const roundedNow = () => {
+        const now = moment();
+        const rounded = moment(Math.round(now.minute() / 5) * 5, "m").set({
+            year: now.year(),
+            month: now.month(),
+            date: now.date(),
+            hour: now.hour(),
+        });
+
+        return rounded.format("HH:mm");
+    };
+
+    const setNow = () => {
+        setEndTime(roundedNow());
+    };
+
+    useEffect(() => {
+        const now = moment();
+
+        if (date != now.format("YYYY-MM-DD")) {
+            return;
+        }
+
+        if (startTime.split(":")[0] != now.hour().toString()) {
+            return;
+        }
+
+        setStartTime(roundedNow());
+    }, []);
+
     return (
         <>
             <div>
@@ -292,113 +331,154 @@ export const EditEvent = ({
                         </>
                     )}
                 </p>
-                <p>
-                    <label htmlFor="allDay">All day event </label>
-                    <input
-                        id="allDay"
-                        checked={allDay}
-                        onChange={(e) => setAllDay(e.target.checked)}
-                        type="checkbox"
-                    />
-                </p>
-                <p>
-                    <label htmlFor="recurring">Recurring Event </label>
-                    <input
-                        id="recurring"
-                        checked={isRecurring}
-                        onChange={(e) => setIsRecurring(e.target.checked)}
-                        type="checkbox"
-                    />
-                </p>
-
-                {isRecurring && (
-                    <>
-                        <DaySelect
-                            value={daysOfWeek}
-                            onChange={setDaysOfWeek}
-                        />
+                <div style={{ display: "flex" }}>
+                    <div>
                         <p>
-                            Starts recurring
+                            <label htmlFor="allDay">All day event </label>
                             <input
-                                type="date"
-                                id="startDate"
-                                value={date}
-                                // @ts-ignore
-                                onChange={makeChangeListener(setDate, (x) => x)}
-                            />
-                            and stops recurring
-                            <input
-                                type="date"
-                                id="endDate"
-                                value={endRecur}
-                                onChange={makeChangeListener(
-                                    setEndRecur,
-                                    (x) => x
-                                )}
+                                id="allDay"
+                                checked={allDay}
+                                onChange={(e) => setAllDay(e.target.checked)}
+                                type="checkbox"
                             />
                         </p>
-                    </>
-                )}
-                <p>
-                    <label htmlFor="task">Task Event </label>
-                    <input
-                        id="task"
-                        checked={isTask}
-                        onChange={(e) => {
-                            setIsTask(e.target.checked);
-                        }}
-                        type="checkbox"
-                    />
-                </p>
+                        <p>
+                            <label htmlFor="recurring">Recurring Event </label>
+                            <input
+                                id="recurring"
+                                checked={isRecurring}
+                                onChange={(e) =>
+                                    setIsRecurring(e.target.checked)
+                                }
+                                type="checkbox"
+                            />
+                        </p>
 
-                {isTask && (
-                    <>
-                        <label htmlFor="taskStatus">Complete? </label>
-                        <input
-                            id="taskStatus"
-                            checked={
-                                !(complete === false || complete === undefined)
-                            }
-                            onChange={(e) =>
-                                setComplete(
-                                    e.target.checked
-                                        ? DateTime.now().toISO()
-                                        : false
-                                )
-                            }
-                            type="checkbox"
-                        />
-                    </>
-                )}
-
-                <p
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        width: "100%",
-                    }}
-                >
-                    <button type="submit"> Save Event </button>
-                    <span>
-                        {deleteEvent && (
-                            <button
-                                type="button"
-                                style={{
-                                    backgroundColor:
-                                        "var(--interactive-normal)",
-                                    color: "var(--background-modifier-error)",
-                                    borderColor:
-                                        "var(--background-modifier-error)",
-                                    borderWidth: "1px",
-                                    borderStyle: "solid",
-                                }}
-                                onClick={deleteEvent}
-                            >
-                                Delete Event
-                            </button>
+                        {isRecurring && (
+                            <>
+                                <DaySelect
+                                    value={daysOfWeek}
+                                    onChange={setDaysOfWeek}
+                                />
+                                <p>
+                                    Starts recurring
+                                    <input
+                                        type="date"
+                                        id="startDate"
+                                        value={date}
+                                        onChange={makeChangeListener(
+                                            // @ts-ignore
+                                            setDate,
+                                            (x) => x
+                                        )}
+                                    />
+                                    and stops recurring
+                                    <input
+                                        type="date"
+                                        id="endDate"
+                                        value={endRecur}
+                                        onChange={makeChangeListener(
+                                            setEndRecur,
+                                            (x) => x
+                                        )}
+                                    />
+                                </p>
+                            </>
                         )}
-                    </span>
-                </p>
+                        <p>
+                            <label htmlFor="task">Task Event </label>
+                            <input
+                                id="task"
+                                checked={isTask}
+                                onChange={(e) => {
+                                    setIsTask(e.target.checked);
+                                }}
+                                type="checkbox"
+                            />
+                        </p>
+
+                        {isTask && (
+                            <>
+                                <label htmlFor="taskStatus">Complete? </label>
+                                <input
+                                    id="taskStatus"
+                                    checked={
+                                        !(
+                                            complete === false ||
+                                            complete === undefined
+                                        )
+                                    }
+                                    onChange={(e) =>
+                                        setComplete(
+                                            e.target.checked
+                                                ? DateTime.now().toISO()
+                                                : false
+                                        )
+                                    }
+                                    type="checkbox"
+                                />
+                            </>
+                        )}
+
+                        <p
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                width: "100%",
+                            }}
+                        >
+                            <button type="submit"> Save Event </button>
+                        </p>
+                    </div>
+                    <div style={{ display: "flex", gap: "5px" }}>
+                        {!allDay && (
+                            <>
+                                <button type="button" onClick={(e) => setNow()}>
+                                    Now
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        setDefinedEndTime(5, "minute");
+                                    }}
+                                >
+                                    5 min
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        setDefinedEndTime(10, "minute");
+                                    }}
+                                >
+                                    10 min
+                                </button>
+                            </>
+                        )}
+                    </div>
+                    <div
+                        style={{ flex: 1, alignContent: "end", clear: "both" }}
+                    >
+                        <span style={{ float: "right" }}>
+                            {deleteEvent && (
+                                <button
+                                    type="button"
+                                    style={{
+                                        backgroundColor:
+                                            "var(--interactive-normal)",
+                                        color: "var(--background-modifier-error)",
+                                        borderColor:
+                                            "var(--background-modifier-error)",
+                                        borderWidth: "1px",
+                                        borderStyle: "solid",
+                                    }}
+                                    onClick={deleteEvent}
+                                >
+                                    Delete Event
+                                </button>
+                            )}
+                        </span>
+                    </div>
+                </div>
             </form>
         </>
     );

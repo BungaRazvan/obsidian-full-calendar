@@ -116,7 +116,9 @@ const getInlineEventFromLine = (
     }
 
     return validateEvent({
-        title: text.replace(listRegex, "").replace(fieldRegex, "").trim(),
+        title: String(
+            text.replace(listRegex, "").replace(fieldRegex, "").trim()
+        ),
         completed: checkboxTodo(text),
         ...globalAttrs,
         ...attrs,
