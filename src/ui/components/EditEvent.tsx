@@ -85,6 +85,7 @@ interface EditEventProps {
     }[];
     defaultCalendarIndex: number;
     initialEvent?: Partial<OFCEvent>;
+    editing?: boolean;
     open?: () => Promise<void>;
     deleteEvent?: () => Promise<void>;
 }
@@ -96,6 +97,7 @@ export const EditEvent = ({
     deleteEvent,
     calendars,
     defaultCalendarIndex,
+    editing,
 }: EditEventProps) => {
     const [date, setDate] = useState(
         initialEvent
@@ -116,6 +118,7 @@ export const EditEvent = ({
 
     let initialStartTime = "";
     let initialEndTime = "";
+
     if (initialEvent) {
         // @ts-ignore
         const { startTime, endTime } = initialEvent;
@@ -230,7 +233,9 @@ export const EditEvent = ({
             return;
         }
 
-        if (startTime.split(":")[0] != now.hour().toString()) {
+        console.log(defaultCalendarIndex);
+
+        if (editing) {
             return;
         }
 

@@ -60,11 +60,13 @@ export function launchEditModal(plugin: FullCalendarPlugin, eventId: string) {
 
     const calIdx = calendars.findIndex(({ id }) => id === calId);
 
+    console.log(calIdx);
     new ReactModal(plugin.app, async (closeModal) =>
         React.createElement(EditEvent, {
             initialEvent: eventToEdit,
             calendars,
             defaultCalendarIndex: calIdx,
+            editing: true,
             submit: async (data, calendarIndex) => {
                 try {
                     if (calendarIndex !== calIdx) {
