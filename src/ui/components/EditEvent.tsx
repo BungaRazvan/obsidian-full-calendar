@@ -233,9 +233,13 @@ export const EditEvent = ({
             return;
         }
 
-        console.log(defaultCalendarIndex);
-
         if (editing) {
+            return;
+        }
+
+        const start = moment(initialStartTime, "HH:mm");
+
+        if (start.hour() != now.hour()) {
             return;
         }
 
