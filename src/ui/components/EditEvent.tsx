@@ -212,17 +212,23 @@ export const EditEvent = ({
 
     const roundedNow = () => {
         const now = moment();
-        const rounded = moment(Math.round(now.minute() / 5) * 5, "m").set({
-            year: now.year(),
-            month: now.month(),
-            date: now.date(),
-            hour: now.hour(),
-        });
 
-        return rounded.format("HH:mm");
+        const minutes = now.minute();
+        const roundedMinutes = Math.round(minutes / 5) * 5;
+
+        if (roundedMinutes === 60) {
+            now.add(1, "hour").minutes(0);
+        } else {
+            now.minutes(roundedMinutes);
+        }
+
+        now.seconds(0);
+
+        return now.format("HH:mm");
     };
 
     const setNow = () => {
+        console.log(roundedNow());
         setEndTime(roundedNow());
     };
 
