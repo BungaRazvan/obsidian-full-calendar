@@ -27,6 +27,7 @@ export interface FullCalendarSettings {
     };
     timeFormat24h: boolean;
     clickToCreateEventFromMonthView: boolean;
+    savedSuggestions: string[];
 }
 
 export const DEFAULT_SETTINGS: FullCalendarSettings = {
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: FullCalendarSettings = {
     },
     timeFormat24h: false,
     clickToCreateEventFromMonthView: true,
+    savedSuggestions: [],
 };
 
 const WEEKDAYS = [

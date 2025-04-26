@@ -20,6 +20,7 @@ export function launchCreateModal(
                 name: cal.name,
             };
         });
+
     new ReactModal(plugin.app, async (closeModal) =>
         React.createElement(EditEvent, {
             initialEvent: partialEvent,
@@ -37,6 +38,7 @@ export function launchCreateModal(
                 }
                 closeModal();
             },
+            plugin: plugin,
         })
     ).open();
 }
@@ -60,7 +62,6 @@ export function launchEditModal(plugin: FullCalendarPlugin, eventId: string) {
 
     const calIdx = calendars.findIndex(({ id }) => id === calId);
 
-    console.log(calIdx);
     new ReactModal(plugin.app, async (closeModal) =>
         React.createElement(EditEvent, {
             initialEvent: eventToEdit,
@@ -98,6 +99,7 @@ export function launchEditModal(plugin: FullCalendarPlugin, eventId: string) {
                     }
                 }
             },
+            plugin: plugin,
         })
     ).open();
 }

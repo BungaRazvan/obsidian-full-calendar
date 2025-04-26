@@ -3,6 +3,9 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { CalendarInfo, OFCEvent } from "../../types";
 import moment from "moment";
+import { AutocompleteInput } from "./AutoCompleteInput";
+import { Plugin } from "obsidian";
+import FullCalendarPlugin from "src/main";
 
 function makeChangeListener<T>(
     setState: React.Dispatch<React.SetStateAction<T>>,
@@ -88,6 +91,7 @@ interface EditEventProps {
     editing?: boolean;
     open?: () => Promise<void>;
     deleteEvent?: () => Promise<void>;
+    plugin: FullCalendarPlugin;
 }
 
 export const EditEvent = ({
@@ -98,6 +102,7 @@ export const EditEvent = ({
     calendars,
     defaultCalendarIndex,
     editing,
+    plugin,
 }: EditEventProps) => {
     const [date, setDate] = useState(
         initialEvent
@@ -210,6 +215,22 @@ export const EditEvent = ({
         setEndTime(dateTime.format("HH:mm"));
     };
 
+    const modifyEndTime = (
+        value: moment.DurationInputArg1,
+        type: moment.DurationInputArg2,
+        operation: "-" | "+"
+    ) => {
+        const dateTime = moment(`${date}T${endTime}`);
+
+        if (operation == "-") {
+            dateTime.subtract(value, type);
+        } else {
+            dateTime.add(value, type);
+        }
+
+        setEndTime(dateTime.format("HH:mm"));
+    };
+
     const roundedNow = () => {
         const now = moment();
 
@@ -251,6 +272,84 @@ export const EditEvent = ({
         setStartTime(roundedNow());
     }, []);
 
+    const renderEndTimeButtons = () => {
+        return (
+            <>
+                <button type="button" onClick={(e) => setNow()}>
+                    Now
+                </button>
+                <div>
+                    <div className="edit-calendar-time-buttons">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                setDefinedEndTime(5, "minute");
+                            }}
+                        >
+                            5 min
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                modifyEndTime(5, "minute", "+");
+                            }}
+                        >
+                            + 5 min
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                modifyEndTime(5, "minute", "-");
+                            }}
+                        >
+                            - 5 min
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <div className="edit-calendar-time-buttons">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                setDefinedEndTime(10, "minute");
+                            }}
+                        >
+                            10 min
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                modifyEndTime(10, "minute", "+");
+                            }}
+                        >
+                            + 10 min
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                modifyEndTime(10, "minute", "-");
+                            }}
+                        >
+                            - 10 min
+                        </button>
+                    </div>
+                </div>
+            </>
+        );
+    };
+
+    const saveTitleForAutoComplete = () => {
+        console.log(title);
+        if (!title) {
+            return;
+        }
+
+        plugin.settings.savedSuggestions.push(title);
+        plugin.saveSettings();
+    };
+
     return (
         <>
             <div>
@@ -260,16 +359,17 @@ export const EditEvent = ({
             </div>
 
             <form onSubmit={handleSubmit}>
-                <p>
-                    <input
-                        ref={titleRef}
-                        type="text"
-                        id="title"
+                <p style={{ display: "flex" }}>
+                    <AutocompleteInput
+                        titleRef={titleRef}
+                        onChange={setTitle}
                         value={title}
-                        placeholder={"Add title"}
-                        required
-                        onChange={makeChangeListener(setTitle, (x) => x)}
+                        plugin={plugin}
                     />
+
+                    <button type="button" onClick={saveTitleForAutoComplete}>
+                        Save title
+                    </button>
                 </p>
                 <p>
                     <select
@@ -444,34 +544,17 @@ export const EditEvent = ({
                             <button type="submit"> Save Event </button>
                         </p>
                     </div>
-                    <div style={{ display: "flex", gap: "5px" }}>
-                        {!allDay && (
-                            <>
-                                <button type="button" onClick={(e) => setNow()}>
-                                    Now
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        setDefinedEndTime(5, "minute");
-                                    }}
-                                >
-                                    5 min
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        setDefinedEndTime(10, "minute");
-                                    }}
-                                >
-                                    10 min
-                                </button>
-                            </>
-                        )}
-                    </div>
+
                     <div
-                        style={{ flex: 1, alignContent: "end", clear: "both" }}
+                        style={{
+                            display: "flex",
+                            gap: "5px",
+                            flexDirection: "column",
+                        }}
                     >
+                        {!allDay && renderEndTimeButtons()}
+                    </div>
+                    <div style={{ flex: 1, alignContent: "end" }}>
                         <span style={{ float: "right" }}>
                             {deleteEvent && (
                                 <button
