@@ -18,7 +18,10 @@ export function AutocompleteInput(props: AutocompleteInputProps) {
     );
 
     const matches = suggestions.filter(
-        (s: string) => s.startsWith(text) && text && s !== text
+        (s: string) =>
+            s.toLocaleLowerCase().contains(text.toLocaleLowerCase()) &&
+            text &&
+            s !== text
     );
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
