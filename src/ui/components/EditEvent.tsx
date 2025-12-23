@@ -341,8 +341,11 @@ export const EditEvent = ({
     };
 
     const saveTitleForAutoComplete = () => {
-        console.log(title);
         if (!title) {
+            return;
+        }
+
+        if (plugin.settings.savedSuggestions.includes(title)) {
             return;
         }
 

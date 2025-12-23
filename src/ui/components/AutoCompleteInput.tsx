@@ -1,4 +1,5 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
+import Trie from "src/core/Trie";
 import FullCalendarPlugin from "src/main";
 
 type AutocompleteInputProps = {
@@ -13,18 +14,33 @@ export function AutocompleteInput(props: AutocompleteInputProps) {
 
     const [text, setText] = useState(value || "");
     const [highlightedIndex, setHighlightedIndex] = useState(0);
-    const [suggestions, setSuggestions] = useState(
-        plugin.settings.savedSuggestions || []
-    );
 
-    const matches = suggestions.filter(
-        (s: string) =>
-            s.toLocaleLowerCase().contains(text.toLocaleLowerCase()) &&
-            text &&
-            s !== text
-    );
+    const trie = useMemo(() => {
+        const t = new Trie();
+        (plugin.settings.savedSuggestions || []).forEach((s: string) =>
+            t.insert(s)
+        );
+
+        return t;
+    }, [plugin.settings.savedSuggestions]);
+
+    const matches = useMemo(() => {
+        if (!text) {
+            return [];
+        }
+
+        return trie
+            .search(text)
+            .filter((s) => s.toLocaleLowerCase() !== text.toLocaleLowerCase());
+    }, [text, trie]);
+
+    console.log(matches);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!matches.length) {
+            return;
+        }
+
         if (e.key === "Tab" || e.key === "Enter") {
             e.preventDefault();
             setText(matches[highlightedIndex]);

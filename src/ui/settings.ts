@@ -67,6 +67,13 @@ const INITIAL_VIEW_OPTIONS = {
     },
 };
 
+export function addEventSavedTitles(
+    app: App,
+    plugin: FullCalendarPlugin,
+    containerEl: HTMLElement,
+    display: Function
+) {}
+
 export function addCalendarButton(
     app: App,
     plugin: FullCalendarPlugin,
@@ -247,6 +254,40 @@ export class FullCalendarSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 });
             });
+
+        containerEl.createEl("h2", { text: "Manage Event Saved Titles" });
+
+        const suggestions = this.plugin.settings.savedSuggestions;
+
+        if (!suggestions.length) {
+            containerEl.createEl("p", {
+                text: "No saved suggestions yet.",
+                cls: "setting-item-description",
+            });
+            return;
+        }
+
+        suggestions.forEach((suggestion, index) => {
+            const setting = new Setting(containerEl);
+            setting.infoEl.remove();
+
+            setting.addText((text) => {
+                text.setValue(suggestion).onChange(async (value) => {
+                    this.plugin.settings.savedSuggestions[index] = value;
+                    await this.plugin.saveSettings();
+                });
+                text.inputEl.style.flex = "1";
+            });
+            setting.addExtraButton((btn) => {
+                btn.setIcon("trash")
+                    .setTooltip("Remove suggestion")
+                    .onClick(async () => {
+                        this.plugin.settings.savedSuggestions.splice(index, 1);
+                        await this.plugin.saveSettings();
+                        this.display();
+                    });
+            });
+        });
 
         containerEl.createEl("h2", { text: "Manage Calendars" });
         addCalendarButton(
